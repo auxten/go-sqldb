@@ -9,7 +9,7 @@ var (
 )
 
 func printRow(row *Row) {
-	fmt.Printf("%d %s %s", row.id, row.username, row.email)
+	fmt.Printf("%d %s %s", row.Id, row.Username, row.Email)
 }
 
 func dumpConst() {

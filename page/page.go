@@ -1,4 +1,4 @@
-package main
+package page
 
 import (
 	"fmt"
@@ -14,14 +14,24 @@ type Page struct {
 	LeafNode     *node.LeafNode
 }
 
-type Pager struct {
-	file    *os.File
-	fileLen int64
-	pageNum uint32  // pageNum is the boundary of db memory page.
-	pages   []*Page // Page pointer slice, nil member indicates cache missing.
+func (p *Page) GetMaxKey() uint32 {
+	if p.InternalNode != nil {
+		return p.InternalNode.ICells[p.InternalNode.Header.KeysNum-1].Key
+	} else if p.LeafNode != nil {
+		return p.LeafNode.Cells[p.LeafNode.Header.Cells-1].Key
+	} else {
+		panic("neither Leaf nor Internal node")
+	}
 }
 
-func pagerOpen(fileName string) (pager *Pager, err error) {
+type Pager struct {
+	File    *os.File
+	fileLen int64
+	PageNum uint32  // PageNum is the boundary of db memory page.
+	Pages   []*Page // Page pointer slice, nil member indicates cache missing.
+}
+
+func PagerOpen(fileName string) (pager *Pager, err error) {
 	var (
 		dbFile  *os.File
 		fileLen int64
@@ -45,58 +55,59 @@ func pagerOpen(fileName string) (pager *Pager, err error) {
 		panic("file length exceeds max pages limit")
 	}
 	pager = &Pager{
-		file:    dbFile,
+		File:    dbFile,
 		fileLen: fileLen,
-		pageNum: pageNum,
-		pages:   make([]*Page, node.MaxPages),
+		PageNum: pageNum,
+		Pages:   make([]*Page, node.MaxPages),
 	}
 
 	return
 }
 
-func (p *Pager) getPage(pageIdx uint32) (page *Page, err error) {
+func (p *Pager) GetPage(pageIdx uint32) (page *Page, err error) {
 	if pageIdx >= node.MaxPages {
 		return nil, fmt.Errorf("page index %d out of node.MaxPages %d", pageIdx, node.MaxPages)
 	}
 
-	if p.pages[pageIdx] == nil {
+	if p.Pages[pageIdx] == nil {
 		// Cache miss
 		// If pageIdx within data file, just read,
 		// else just return blank page which will be flushed to db file later.
-		if pageIdx <= p.pageNum {
+		if pageIdx <= p.PageNum {
 			// Load page from file
 			buf := make([]byte, node.PageSize)
-			if _, err = p.file.ReadAt(buf, int64(pageIdx*node.PageSize)); err != nil {
+			if _, err = p.File.ReadAt(buf, int64(pageIdx*node.PageSize)); err != nil {
 				if err != io.EOF {
 					return
 				}
 			}
+			// Empty new page will be leaf node
 			if buf[0] == 0 {
 				// Leaf node
 				leaf := &node.LeafNode{}
 				if _, err = leaf.Unmarshal(buf); err != nil {
 					return
 				}
-				p.pages[pageIdx] = &Page{LeafNode: leaf}
+				p.Pages[pageIdx] = &Page{LeafNode: leaf}
 			} else {
 				// Internal node
 				internal := &node.InternalNode{}
 				if _, err = internal.Unmarshal(buf); err != nil {
 					return
 				}
-				p.pages[pageIdx] = &Page{InternalNode: internal}
+				p.Pages[pageIdx] = &Page{InternalNode: internal}
 			}
-			if pageIdx >= p.pageNum {
-				p.pageNum = pageIdx + 1
+			if pageIdx >= p.PageNum {
+				p.PageNum = pageIdx + 1
 			}
 		}
 	}
 
-	return p.pages[pageIdx], nil
+	return p.Pages[pageIdx], nil
 }
 
 func (p *Pager) Flush(pageIdx uint32) (err error) {
-	page := p.pages[pageIdx]
+	page := p.Pages[pageIdx]
 	if page == nil {
 		return fmt.Errorf("flushing nil page")
 	}
@@ -111,9 +122,9 @@ func (p *Pager) Flush(pageIdx uint32) (err error) {
 			return
 		}
 	} else {
-		panic("neither Leaf nor Internal node")
+		panic("neither leaf nor internal node")
 	}
-	_, err = p.file.WriteAt(buf, int64(pageIdx*node.PageSize))
+	_, err = p.File.WriteAt(buf, int64(pageIdx*node.PageSize))
 
 	return
 }

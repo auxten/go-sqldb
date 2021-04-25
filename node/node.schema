@@ -37,7 +37,7 @@ struct LeafNode {
 }
 
 struct Row {
-  id uint32
-  username [32]byte
-  email [256]byte
+  Id uint32
+  Username [32]byte
+  Email [256]byte
 }

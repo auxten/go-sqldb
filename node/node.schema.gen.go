@@ -523,9 +523,9 @@ func (d *LeafNode) Unmarshal(buf []byte) (uint64, error) {
 }
 
 type Row struct {
-	id       uint32
-	username [32]byte
-	email    [256]byte
+	Id       uint32
+	Username [32]byte
+	Email    [256]byte
 }
 
 func (d *Row) Size() (s uint64) {
@@ -552,21 +552,21 @@ func (d *Row) Marshal(buf []byte) ([]byte, error) {
 
 	{
 
-		buf[0+0] = byte(d.id >> 0)
+		buf[0+0] = byte(d.Id >> 0)
 
-		buf[1+0] = byte(d.id >> 8)
+		buf[1+0] = byte(d.Id >> 8)
 
-		buf[2+0] = byte(d.id >> 16)
+		buf[2+0] = byte(d.Id >> 16)
 
-		buf[3+0] = byte(d.id >> 24)
+		buf[3+0] = byte(d.Id >> 24)
 
 	}
 	{
-		copy(buf[i+4:], d.username[:])
+		copy(buf[i+4:], d.Username[:])
 		i += 32
 	}
 	{
-		copy(buf[i+4:], d.email[:])
+		copy(buf[i+4:], d.Email[:])
 		i += 256
 	}
 	return buf[:i+4], nil
@@ -577,15 +577,15 @@ func (d *Row) Unmarshal(buf []byte) (uint64, error) {
 
 	{
 
-		d.id = 0 | (uint32(buf[i+0+0]) << 0) | (uint32(buf[i+1+0]) << 8) | (uint32(buf[i+2+0]) << 16) | (uint32(buf[i+3+0]) << 24)
+		d.Id = 0 | (uint32(buf[i+0+0]) << 0) | (uint32(buf[i+1+0]) << 8) | (uint32(buf[i+2+0]) << 16) | (uint32(buf[i+3+0]) << 24)
 
 	}
 	{
-		copy(d.username[:], buf[i+4:])
+		copy(d.Username[:], buf[i+4:])
 		i += 32
 	}
 	{
-		copy(d.email[:], buf[i+4:])
+		copy(d.Email[:], buf[i+4:])
 		i += 256
 	}
 	return i + 4, nil
