@@ -21,26 +21,69 @@ func TestParser(t *testing.T) {
 
 func TestParserSelect(t *testing.T) {
 	var p *Parser
-
 	Convey("SELECT SQL", t, func() {
 		p = &Parser{}
-		ast, err := p.ParserSelect("SELECT ab,b, c FROM foo WHERE id < 3")
+		ast, err := p.ParseSelect("SELECT ab,b, c FROM foo WHERE id < 3")
 		So(err, ShouldBeNil)
 		So(ast.Projects, ShouldResemble, []string{"ab", "b", "c"})
-		So(ast.From, ShouldEqual, "foo")
+		So(ast.Table, ShouldEqual, "foo")
 
 		p = &Parser{}
-		ast, err = p.ParserSelect("SELECT ab,b,c FROM foo WHERE id < 3 AND ab > 10 LIMIT 11")
+		ast, err = p.ParseSelect("SELECT ab,b,c FROM foo WHERE id < 3 AND ab > 10 LIMIT 11")
 		So(err, ShouldBeNil)
 		So(ast.Projects, ShouldResemble, []string{"ab", "b", "c"})
 		So(ast.Where, ShouldResemble, []string{"id", "<", "3", "AND", "ab", ">", "10"})
-		So(ast.From, ShouldEqual, "foo")
+		So(ast.Table, ShouldEqual, "foo")
 		So(ast.Limit, ShouldEqual, 11)
 
 		p = &Parser{}
-		ast, err = p.ParserSelect("SELECT 1")
+		ast, err = p.ParseSelect("SELECT 1")
 		So(err, ShouldBeNil)
 		So(ast.Projects, ShouldResemble, []string{"1"})
-		So(ast.From, ShouldEqual, "")
+		So(ast.Table, ShouldEqual, "")
+	})
+}
+
+func TestParserInsert(t *testing.T) {
+	var p *Parser
+	Convey("INSERT SQL with Column names", t, func() {
+		p = &Parser{}
+		ast, err := p.ParseInsert("INSERT INTO table_name(column1, column2) VALUES (value1, value2)")
+		So(err, ShouldBeNil)
+		So(ast.Table, ShouldEqual, "table_name")
+		So(ast.Columns, ShouldResemble, []string{"column1", "column2"})
+		So(ast.Values, ShouldResemble, [][]string{{"value1", "value2"}})
+	})
+
+	Convey("column count miss match", t, func() {
+		p = &Parser{}
+		_, err := p.ParseInsert("INSERT INTO table_name(column1, column2, column3) VALUES (value1, value2)")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldContainSubstring, "expected column count")
+	})
+
+	Convey("INSERT SQL", t, func() {
+		p = &Parser{}
+		ast, err := p.ParseInsert("INSERT INTO table_name VALUES (value1, value2)")
+		So(err, ShouldBeNil)
+		So(ast.Table, ShouldEqual, "table_name")
+		So(ast.Columns, ShouldBeNil)
+		So(ast.Values, ShouldResemble, [][]string{{"value1", "value2"}})
+	})
+
+	Convey("INSERT multiple rows", t, func() {
+		p = &Parser{}
+		ast, err := p.ParseInsert("INSERT INTO table_name VALUES (value1, value2), (value3, value4)")
+		So(err, ShouldBeNil)
+		So(ast.Table, ShouldEqual, "table_name")
+		So(ast.Columns, ShouldBeNil)
+		So(ast.Values, ShouldResemble, [][]string{{"value1", "value2"}, {"value3", "value4"}})
+	})
+
+	Convey("column count miss match 2", t, func() {
+		p = &Parser{}
+		_, err := p.ParseInsert("INSERT INTO table_name VALUES (value1, value2), (value3, value4, value5)")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldContainSubstring, "expected column count")
 	})
 }

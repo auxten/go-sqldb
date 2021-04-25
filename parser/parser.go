@@ -39,12 +39,15 @@ type Parser struct {
 
 type SelectTree struct {
 	Projects []string
-	From     string
+	Table    string
 	Where    []string
 	Limit    int64
 }
 
 type InsertTree struct {
+	Table   string
+	Columns []string
+	Values  [][]string
 }
 
 func (p *Parser) GetSQLType(sql string) StatementType {
@@ -66,7 +69,7 @@ func (p *Parser) GetSQLType(sql string) StatementType {
 }
 
 /*
-ParserSelect is a simple select statement parser.
+ParseSelect is a simple select statement parser.
 It's just a demo of SELECT statement parser skeleton.
 Currently, the most complex SQL supported here is something like:
 
@@ -75,7 +78,7 @@ Currently, the most complex SQL supported here is something like:
 Even SQL-92 standard is far more complex.
 For a production ready SQL parser, see: https://github.com/auxten/postgresql-parser
 */
-func (p *Parser) ParserSelect(sel string) (ast *SelectTree, err error) {
+func (p *Parser) ParseSelect(sel string) (ast *SelectTree, err error) {
 	ast = &SelectTree{}
 	s := p.s
 	s.Init(strings.NewReader(sel))
@@ -115,7 +118,7 @@ func (p *Parser) ParserSelect(sel string) (ast *SelectTree, err error) {
 		// eg.  SELECT 1;
 		return
 	} else {
-		ast.From = s.TokenText()
+		ast.Table = s.TokenText()
 	}
 
 	// WHERE
@@ -152,11 +155,122 @@ func (p *Parser) ParserSelect(sel string) (ast *SelectTree, err error) {
 		return
 	}
 	txt = s.TokenText()
-	ast.Limit, err = strconv.ParseInt(txt, 10, 32)
+	ast.Limit, err = strconv.ParseInt(txt, 10, 64)
 	return
 }
 
-func (p *Parser) ParserInsert(insert string) (ast *InsertTree, err error) {
+/*
+ParseInsert can parse a simple INSERT statement, eg.
+ 	INSERT INTO table_name VALUES (value1, value2, …)
+	or
+	INSERT INTO table_name(column1, column2, …) VALUES (value1, value2, …)
+*/
+func (p *Parser) ParseInsert(insert string) (ast *InsertTree, err error) {
+	ast = &InsertTree{}
+	s := p.s
+	s.Init(strings.NewReader(insert))
+	if tok := s.Scan(); tok == scanner.EOF || strings.ToUpper(s.TokenText()) != "INSERT" {
+		err = fmt.Errorf("%s is not INSERT statement", insert)
+		return
+	}
+
+	if tok := s.Scan(); tok == scanner.EOF || strings.ToUpper(s.TokenText()) != "INTO" {
+		err = fmt.Errorf("%s expect INTO after INSERT", insert)
+		return
+	}
+
+	// Table name
+	if tok := s.Scan(); tok == scanner.EOF {
+		err = fmt.Errorf("%s expect table after INSERT INTO", insert)
+		return
+	} else {
+		ast.Table = s.TokenText()
+	}
+
+	var columnCnt int
+	// try get colNames
+	if tok := s.Scan(); tok == scanner.EOF {
+		err = fmt.Errorf("%s expect VALUES or (colNames)", insert)
+		return
+	} else {
+		txt := strings.ToUpper(s.TokenText())
+		if txt == "(" {
+			ast.Columns = make([]string, 0, 4)
+			for {
+				if tok := s.Scan(); tok == scanner.EOF {
+					if len(ast.Columns) == 0 {
+						err = fmt.Errorf("%s get Columns failed", insert)
+					}
+					return
+				} else {
+					txt := s.TokenText()
+					//log.Print(txt)
+					if txt == "," {
+						continue
+					} else if txt == ")" {
+						continue
+					} else if strings.ToUpper(txt) == "VALUES" {
+						break
+					} else {
+						ast.Columns = append(ast.Columns, txt)
+					}
+				}
+			}
+		} else if txt != "VALUES" {
+			err = fmt.Errorf("%s expect VALUES or '(' here", insert)
+			return
+		}
+	}
+	columnCnt = len(ast.Columns)
+
+	// VALUES has been scanned try to get (value1, value2), (value3, value4)
+	ast.Values = make([][]string, 0, 4)
+rowLoop:
+	for {
+		if tok := s.Scan(); tok == scanner.EOF {
+			break rowLoop
+		} else {
+			txt := s.TokenText()
+			if txt == "," {
+				// next row
+				continue
+			}
+			if txt == "(" {
+				row := make([]string, 0, 4)
+				for {
+					if tok := s.Scan(); tok == scanner.EOF {
+						break rowLoop
+					} else {
+						txt := s.TokenText()
+						//log.Print(txt)
+						if txt == "," {
+							continue
+						} else if txt == ")" {
+							ast.Values = append(ast.Values, row)
+							break
+						} else {
+							row = append(row, txt)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Check if column count identical
+	for _, row := range ast.Values {
+		if columnCnt == 0 {
+			columnCnt = len(row)
+		} else {
+			if columnCnt != len(row) {
+				err = fmt.Errorf(
+					"%s expected column count is %d, got %d",
+					insert, columnCnt, len(row),
+				)
+				return
+			}
+		}
+	}
 
 	return
 }
