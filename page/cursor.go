@@ -1,7 +1,7 @@
 package page
 
 import (
-	"github.com/gridbase/sqldb/node"
+	"github.com/auxten/go-sqldb/node"
 )
 
 type Cursor struct {

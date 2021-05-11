@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gridbase/sqldb/node"
-	"github.com/gridbase/sqldb/parser"
+	"github.com/auxten/go-sqldb/node"
+	"github.com/auxten/go-sqldb/parser"
 )
 
 func (plan *Plan) Insert(ast *parser.InsertTree) (count int, err error) {

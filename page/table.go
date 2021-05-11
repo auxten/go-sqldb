@@ -3,7 +3,7 @@ package page
 import (
 	"fmt"
 
-	"github.com/gridbase/sqldb/node"
+	"github.com/auxten/go-sqldb/node"
 )
 
 type Table struct {

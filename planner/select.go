@@ -6,9 +6,9 @@ import (
 	"go/types"
 	"strings"
 
-	"github.com/gridbase/sqldb/node"
-	"github.com/gridbase/sqldb/page"
-	"github.com/gridbase/sqldb/parser"
+	"github.com/auxten/go-sqldb/node"
+	"github.com/auxten/go-sqldb/page"
+	"github.com/auxten/go-sqldb/parser"
 )
 
 func (plan *Plan) SelectPrepare(ast *parser.SelectTree) (filteredPipe chan *node.Row, err error) {

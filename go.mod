@@ -1,4 +1,4 @@
-module github.com/gridbase/sqldb
+module github.com/auxten/go-sqldb
 
 go 1.16
 

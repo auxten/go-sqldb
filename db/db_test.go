@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gridbase/sqldb/node"
+	"github.com/auxten/go-sqldb/node"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

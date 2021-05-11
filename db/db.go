@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/gridbase/sqldb/page"
+	"github.com/auxten/go-sqldb/page"
 )
 
 func Open(fileName string) (t *page.Table, err error) {

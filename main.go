@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gridbase/sqldb/db"
-	"github.com/gridbase/sqldb/node"
-	"github.com/gridbase/sqldb/page"
-	"github.com/gridbase/sqldb/parser"
-	"github.com/gridbase/sqldb/planner"
+	"github.com/auxten/go-sqldb/db"
+	"github.com/auxten/go-sqldb/node"
+	"github.com/auxten/go-sqldb/page"
+	"github.com/auxten/go-sqldb/parser"
+	"github.com/auxten/go-sqldb/planner"
 )
 
 func main() {

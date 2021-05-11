@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gridbase/sqldb/db"
-	"github.com/gridbase/sqldb/parser"
+	"github.com/auxten/go-sqldb/db"
+	"github.com/auxten/go-sqldb/parser"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

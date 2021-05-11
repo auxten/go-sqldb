@@ -1,8 +1,8 @@
 package planner
 
 import (
-	"github.com/gridbase/sqldb/node"
-	"github.com/gridbase/sqldb/page"
+	"github.com/auxten/go-sqldb/node"
+	"github.com/auxten/go-sqldb/page"
 )
 
 type Plan struct {
