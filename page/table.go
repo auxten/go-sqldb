@@ -11,7 +11,9 @@ type Table struct {
 	RootPageIdx uint32
 }
 
-func (table *Table) seek(key uint32) (cursor *Cursor, err error) {
+// Seek the page of key, if not exist then return the place key should be
+// for the later INSERT.
+func (table *Table) Seek(key uint32) (cursor *Cursor, err error) {
 	var (
 		rootPage *Page
 	)
@@ -29,28 +31,13 @@ func (table *Table) seek(key uint32) (cursor *Cursor, err error) {
 	return
 }
 
-func (table *Table) start() (cursor *Cursor, err error) {
-	var (
-		p *Page
-	)
-
-	if cursor, err = table.seek(0); err != nil {
-		return
-	}
-	if p, err = table.Pager.GetPage(cursor.PageIdx); err != nil {
-		return
-	}
-	cursor.EndOfTable = p.LeafNode.Header.Cells == 0
-	return
-}
-
 func (table *Table) Insert(row *node.Row) (err error) {
 	var (
 		p   *Page
 		cur *Cursor
 	)
 
-	if cur, err = table.seek(row.Id); err != nil {
+	if cur, err = table.Seek(row.Id); err != nil {
 		return
 	}
 	if p, err = table.Pager.GetPage(cur.PageIdx); err != nil {

@@ -120,7 +120,7 @@ func (cursor *Cursor) LeafNodeSplitInsert(key uint32, row *node.Row) (err error)
 }
 
 func saveToCell(cell *node.Cell, key uint32, row *node.Row) (err error) {
-	var rowBuf []byte
+	rowBuf := make([]byte, row.Size())
 	if _, err = row.Marshal(rowBuf); err != nil {
 		return
 	}
