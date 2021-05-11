@@ -55,6 +55,6 @@ func (d *InternalNode) Child(childIdx uint32) (ptr *uint32) {
 	} else if childIdx == keysNum {
 		return &d.Header.RightChild
 	} else {
-		return &d.ICells[childIdx].Key
+		return &d.ICells[childIdx].Child
 	}
 }
