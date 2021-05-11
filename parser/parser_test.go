@@ -16,6 +16,10 @@ func TestParser(t *testing.T) {
 		p = &Parser{}
 		typ = p.GetSQLType("INSERT INTO foo VALUES (1,2,3)")
 		So(typ, ShouldEqual, INSERT)
+
+		p = &Parser{}
+		typ = p.GetSQLType("UPSERT INTO foo VALUES (1,2,3)")
+		So(typ, ShouldEqual, UNSUPPORTED)
 	})
 }
 
@@ -27,6 +31,13 @@ func TestParserSelect(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(ast.Projects, ShouldResemble, []string{"ab", "b", "c"})
 		So(ast.Table, ShouldEqual, "foo")
+
+		p = &Parser{}
+		ast, err = p.ParseSelect("SELECT ab,b, c FROM foo LIMIT 3")
+		So(err, ShouldBeNil)
+		So(ast.Projects, ShouldResemble, []string{"ab", "b", "c"})
+		So(ast.Table, ShouldEqual, "foo")
+		So(ast.Limit, ShouldEqual, 3)
 
 		p = &Parser{}
 		ast, err = p.ParseSelect("SELECT ab,b,c FROM foo WHERE id < 3 AND ab > 10 LIMIT 11")
@@ -73,11 +84,24 @@ func TestParserInsert(t *testing.T) {
 
 	Convey("INSERT multiple rows", t, func() {
 		p = &Parser{}
-		ast, err := p.ParseInsert("INSERT INTO table_name VALUES (value1, value2), (value3, value4)")
+		ast, err := p.ParseInsert("INSERT INTO table_name VALUES (\"value1\", value2), (\"value3\", value4)")
 		So(err, ShouldBeNil)
 		So(ast.Table, ShouldEqual, "table_name")
 		So(ast.Columns, ShouldBeNil)
-		So(ast.Values, ShouldResemble, [][]string{{"value1", "value2"}, {"value3", "value4"}})
+		So(ast.Values, ShouldResemble, [][]string{{"\"value1\"", "value2"}, {"\"value3\"", "value4"}})
+	})
+
+	Convey("INSERT multiple rows 2", t, func() {
+		p = &Parser{}
+		ast, err := p.ParseInsert("INSERT INTO table (id, username, email) VALUES " +
+			"(0, auxten, \"auxtenwpc@gmail.com\")," +
+			"(1, hahaha, \"hahaha@gmail.com\")," +
+			"(2, jijiji, \"jijiji@gmail.com\")")
+		So(err, ShouldBeNil)
+		So(ast.Table, ShouldEqual, "table")
+		So(ast.Columns, ShouldResemble, []string{"id", "username", "email"})
+		So(ast.Values, ShouldResemble, [][]string{{"0", "auxten", "\"auxtenwpc@gmail.com\""},
+			{"1", "hahaha", "\"hahaha@gmail.com\""}, {"2", "jijiji", "\"jijiji@gmail.com\""}})
 	})
 
 	Convey("column count miss match 2", t, func() {

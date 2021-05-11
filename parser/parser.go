@@ -9,28 +9,19 @@ import (
 
 type Token int
 
-// Common tokens
-const (
-	ILLEGAL = iota
-	SPACE   // space, tab, \r, \n
-	COMMA
-)
-
-type StatementType int
+type StatementType string
 
 // SQL type tokens
-// Start from 10 to reserve common tokens
 const (
-	UNSUPPORTED = iota + 10
-	SELECT
-	INSERT
-)
-
-// Other tokens
-// Start from 20 to reserve SQL type tokens
-const (
-	FROM = iota + 20
-	INTO
+	UNSUPPORTED = "N/A"
+	SELECT      = "SELECT"
+	FROM        = "FROM"
+	WHERE       = "WHERE"
+	LIMIT       = "LIMIT"
+	INSERT      = "INSERT"
+	INTO        = "INTO"
+	VALUES      = "VALUES"
+	ASTERISK    = "*"
 )
 
 type Parser struct {
@@ -53,6 +44,8 @@ type InsertTree struct {
 func (p *Parser) GetSQLType(sql string) StatementType {
 	s := p.s
 	s.Init(strings.NewReader(sql))
+	s.Mode = scanner.ScanIdents | scanner.ScanFloats | scanner.ScanChars | scanner.ScanStrings | scanner.ScanRawStrings
+
 	if tok := s.Scan(); tok != scanner.EOF {
 		txt := strings.ToUpper(s.TokenText())
 		switch txt {
@@ -82,7 +75,9 @@ func (p *Parser) ParseSelect(sel string) (ast *SelectTree, err error) {
 	ast = &SelectTree{}
 	s := p.s
 	s.Init(strings.NewReader(sel))
-	if tok := s.Scan(); tok == scanner.EOF || strings.ToUpper(s.TokenText()) != "SELECT" {
+	s.Mode = scanner.ScanIdents | scanner.ScanFloats | scanner.ScanChars | scanner.ScanStrings | scanner.ScanRawStrings
+
+	if tok := s.Scan(); tok == scanner.EOF || strings.ToUpper(s.TokenText()) != SELECT {
 		err = fmt.Errorf("%s is not SELECT statement", sel)
 		return
 	}
@@ -97,12 +92,12 @@ func (p *Parser) ParseSelect(sel string) (ast *SelectTree, err error) {
 		} else {
 			txt := s.TokenText()
 			//log.Print(txt)
-			if txt == "*" {
-				ast.Projects = append(ast.Projects, "*")
+			if txt == ASTERISK {
+				ast.Projects = append(ast.Projects, ASTERISK)
 			} else {
 				if txt == "," {
 					continue
-				} else if strings.ToUpper(txt) == "FROM" {
+				} else if strings.ToUpper(txt) == FROM {
 					break
 				} else {
 					ast.Projects = append(ast.Projects, txt)
@@ -128,25 +123,25 @@ func (p *Parser) ParseSelect(sel string) (ast *SelectTree, err error) {
 	}
 
 	txt := s.TokenText()
-	if strings.ToUpper(txt) != "WHERE" {
-		err = fmt.Errorf("expect WHERE here")
-		return
-	}
-
-	// token WHERE is scanned, try to get the WHERE clause.
-	ast.Where = make([]string, 0, 4)
-	for {
-		if tok := s.Scan(); tok == scanner.EOF {
-			if len(ast.Where) == 0 {
-				err = fmt.Errorf("missing WHERE clause")
+	if strings.ToUpper(txt) == WHERE {
+		// token WHERE is scanned, try to get the WHERE clause.
+		ast.Where = make([]string, 0, 4)
+		for {
+			if tok := s.Scan(); tok == scanner.EOF {
+				if len(ast.Where) == 0 {
+					err = fmt.Errorf("missing WHERE clause")
+				}
+				return
 			}
-			return
+			txt := s.TokenText()
+			if strings.ToUpper(txt) == LIMIT {
+				break
+			}
+			ast.Where = append(ast.Where, txt)
 		}
-		txt := s.TokenText()
-		if strings.ToUpper(txt) == "LIMIT" {
-			break
-		}
-		ast.Where = append(ast.Where, txt)
+	} else if strings.ToUpper(txt) != LIMIT {
+		err = fmt.Errorf("expect WHERE or LIMIT here")
+		return
 	}
 
 	// token LIMIT is scanned, try to get the limit
@@ -169,12 +164,14 @@ func (p *Parser) ParseInsert(insert string) (ast *InsertTree, err error) {
 	ast = &InsertTree{}
 	s := p.s
 	s.Init(strings.NewReader(insert))
-	if tok := s.Scan(); tok == scanner.EOF || strings.ToUpper(s.TokenText()) != "INSERT" {
+	s.Mode = scanner.ScanIdents | scanner.ScanFloats | scanner.ScanChars | scanner.ScanStrings | scanner.ScanRawStrings
+
+	if tok := s.Scan(); tok == scanner.EOF || strings.ToUpper(s.TokenText()) != INSERT {
 		err = fmt.Errorf("%s is not INSERT statement", insert)
 		return
 	}
 
-	if tok := s.Scan(); tok == scanner.EOF || strings.ToUpper(s.TokenText()) != "INTO" {
+	if tok := s.Scan(); tok == scanner.EOF || strings.ToUpper(s.TokenText()) != INTO {
 		err = fmt.Errorf("%s expect INTO after INSERT", insert)
 		return
 	}
@@ -209,14 +206,14 @@ func (p *Parser) ParseInsert(insert string) (ast *InsertTree, err error) {
 						continue
 					} else if txt == ")" {
 						continue
-					} else if strings.ToUpper(txt) == "VALUES" {
+					} else if strings.ToUpper(txt) == VALUES {
 						break
 					} else {
 						ast.Columns = append(ast.Columns, txt)
 					}
 				}
 			}
-		} else if txt != "VALUES" {
+		} else if txt != VALUES {
 			err = fmt.Errorf("%s expect VALUES or '(' here", insert)
 			return
 		}
@@ -236,7 +233,12 @@ rowLoop:
 				continue
 			}
 			if txt == "(" {
-				row := make([]string, 0, 4)
+				var row []string
+				if columnCnt != 0 {
+					row = make([]string, 0, columnCnt)
+				} else {
+					row = make([]string, 0, 4)
+				}
 				for {
 					if tok := s.Scan(); tok == scanner.EOF {
 						break rowLoop
@@ -264,8 +266,8 @@ rowLoop:
 		} else {
 			if columnCnt != len(row) {
 				err = fmt.Errorf(
-					"%s expected column count is %d, got %d",
-					insert, columnCnt, len(row),
+					"%s expected column count is %d, got %d, %v",
+					insert, columnCnt, len(row), row,
 				)
 				return
 			}
