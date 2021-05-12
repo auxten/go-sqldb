@@ -33,7 +33,21 @@
     }
     ```
 2. SQL 语法的有限支持，参见[单测用例](parser/parser_test.go)
+3. InternalNode 暂不支持分裂，记录数最大为 32 条（Fix soon）
 
+## 运行方式
+1. 运行
+   ```bash
+   go run . test.db
+   ```
+2. 插入数据
+执行 `INSERT INTO table VALUES (10, auxten, "auxtenwpc_gmailcom")`
+可以访问：http://localhost:8080/exec?q=INSERT%20INTO%20table%20VALUES%20(10,%20auxten,%20%22auxtenwpc_gmailcom%22)
+
+3. 查询数据
+执行 `SELECT * FROM table WHERE id > 3 LIMIT 10`
+可以访问：http://localhost:8080/query?q=SELECT%20*%20FROM%20table%20WHERE%20id%20%3E%203%20LIMIT%2010
+   
 ## 特别感谢
 
 1. [Document-oriented, embedded SQL database: genji](https://github.com/genjidb/genji)
