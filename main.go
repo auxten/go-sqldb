@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 
 	"github.com/auxten/go-sqldb/db"
 	"github.com/auxten/go-sqldb/node"
@@ -27,6 +30,7 @@ func main() {
 	if t, err = db.Open(fileName); err != nil {
 		panic(err)
 	}
+	defer db.Close(t)
 
 	http.HandleFunc("/query", func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
@@ -42,18 +46,37 @@ func main() {
 				_, _ = fmt.Fprintf(writer, "not a SELECT statement")
 				return
 			}
-			ast, err = p.ParseSelect(query)
+			if ast, err = p.ParseSelect(query); err != nil {
+				_, _ = fmt.Fprintf(writer, "parse %s, error: %v", query, err)
+				return
+			}
 
 			plan := planner.NewPlan(t)
 			if resultPipe, err = plan.SelectPrepare(ast); err != nil {
 				_, _ = fmt.Fprintf(writer, "%s", err)
 				return
 			}
+
 			for row := range resultPipe {
-				_, _ = fmt.Fprintf(writer, "%d\t%s\t%s\n",
-					row.Id,
-					string(row.Username[:length(row.Username[:])]),
-					string(row.Email[:length(row.Email[:])]))
+				if len(ast.Projects) == 1 && ast.Projects[0] == parser.ASTERISK {
+					_, _ = fmt.Fprintf(writer, "%d\t%s\t%s\n",
+						row.Id,
+						string(row.Username[:length(row.Username[:])]),
+						string(row.Email[:length(row.Email[:])]))
+					continue
+				}
+				var outRow = make([]string, 0, 3)
+				for _, proj := range ast.Projects {
+					switch strings.ToUpper(proj) {
+					case "ID":
+						outRow = append(outRow, fmt.Sprintf("%d", row.Id))
+					case "USERNAME":
+						outRow = append(outRow, string(row.Username[:length(row.Username[:])]))
+					case "EMAIL":
+						outRow = append(outRow, string(row.Email[:length(row.Email[:])]))
+					}
+				}
+				_, _ = fmt.Fprint(writer, strings.Join(outRow, "\t"), "\n")
 			}
 			return
 		}
@@ -88,7 +111,11 @@ func main() {
 		_, _ = fmt.Fprintf(writer, "need /exec?q=INSERT")
 		return
 	})
-	_ = http.ListenAndServe(":8080", nil)
+	go http.ListenAndServe(":8080", nil)
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	<-sigs
 }
 
 func length(s []byte) (i int) {
