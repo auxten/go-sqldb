@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/auxten/go-sqldb/db"
+	"github.com/auxten/go-sqldb/node"
 	"github.com/auxten/go-sqldb/parser"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -37,9 +38,17 @@ func TestPlan_Insert(t *testing.T) {
 		plan2 := NewPlan(table)
 		resultPipe, err := plan2.SelectPrepare(ast2)
 		So(err, ShouldBeNil)
-		for row := range resultPipe {
-			fmt.Println(row.Id, string(row.Username[:]), string(row.Email[:]))
+		cnt = 0
+		var row *node.Row
+		for row = range resultPipe {
+			cnt++
+			//fmt.Println(row.Id, string(row.Username[:]), string(row.Email[:]))
 		}
+		So(cnt, ShouldEqual, 1)
+		So(row, ShouldNotBeNil)
+		So(row.Id, ShouldEqual, 10)
+		So(string(row.Username[:]), ShouldStartWith, "auxten")
+		So(string(row.Email[:]), ShouldStartWith, "\"auxtenwpc@gmail.com\"")
 	})
 }
 

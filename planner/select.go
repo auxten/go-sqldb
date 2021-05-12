@@ -39,20 +39,19 @@ func (plan *Plan) SelectPrepare(ast *parser.SelectTree) (filteredPipe chan *node
 			row *node.Row
 		)
 		defer close(out)
-		if row, err = plan.fetchRow(table); err != nil {
-			plan.ErrorsPipe <- err
-			return
-		}
-		out <- row
-		for !plan.cursor.EndOfTable {
+		for {
+			if row, err = plan.fetchRow(table); err != nil {
+				plan.ErrorsPipe <- err
+				return
+			}
+
 			select {
 			case <-plan.Stop:
 				return
 			case out <- row:
-				if row, err = plan.fetchRow(table); err != nil {
-					plan.ErrorsPipe <- err
-					return
-				}
+			}
+			if plan.cursor.EndOfTable {
+				break
 			}
 		}
 	}(plan.UnFilteredPipe)
