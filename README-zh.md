@@ -48,8 +48,8 @@
    ```
 2. 插入数据
    
-   执行 `INSERT INTO table VALUES (10, auxten, "auxtenwpc_gmailcom")`
-   可以访问：http://localhost:8080/exec?q=INSERT%20INTO%20table%20VALUES%20(10,%20auxten,%20%22auxtenwpc_gmailcom%22)
+   执行 `INSERT INTO table (id, username, email) VALUES (10, auxten, "auxtenwpc_gmailcom")`
+   可以访问：http://localhost:8080/exec?q=INSERT%20INTO%20table%20(id,%20username,%20email)%20VALUES%20(10,%20auxten,%20%22auxtenwpc_gmailcom%22)
 
 3. 查询数据
    
