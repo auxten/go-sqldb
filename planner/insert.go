@@ -14,7 +14,7 @@ func (plan *Plan) Insert(ast *parser.InsertTree) (count int, err error) {
 		// 根据 InsertTree.Columns 的字段顺序，我们强制类型转换还原出 node.Row 结构
 		row := &node.Row{}
 		if len(ast.Columns) == 0 {
-			ast.Columns = []string{"id", "username", "email"}
+			ast.Columns = []string{"id", "sex", "age", "username", "email", "phone"}
 		}
 		for i, col := range ast.Columns {
 			switch strings.ToUpper(col) {
@@ -24,10 +24,20 @@ func (plan *Plan) Insert(ast *parser.InsertTree) (count int, err error) {
 					return
 				}
 				row.Id = uint32(parsed)
+			case "SEX":
+				row.Sex = r[i][0]
+			case "AGE":
+				var parsed int64
+				if parsed, err = strconv.ParseInt(r[i], 10, 64); err != nil {
+					return
+				}
+				row.Age = uint8(parsed)
 			case "USERNAME":
 				copy(row.Username[:], r[i])
 			case "EMAIL":
 				copy(row.Email[:], r[i])
+			case "PHONE":
+				copy(row.Phone[:], r[i])
 			}
 		}
 

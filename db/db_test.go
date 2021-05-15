@@ -23,8 +23,11 @@ func TestDB(t *testing.T) {
 
 		err = table.Insert(&node.Row{
 			Id:       1,
+			Sex:      'F',
+			Age:      35,
 			Username: [32]byte{'a', 'u', 'x', 't', 'e', 'n'},
-			Email:    [256]byte{'a', 'u', 'x', 't', 'e', 'n', '@'},
+			Email:    [128]byte{'a', 'u', 'x', 't', 'e', 'n', '@'},
+			Phone:    [64]byte{'1', '2', '3', '4', '5', '6', '0'},
 		})
 		So(err, ShouldBeNil)
 

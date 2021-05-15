@@ -27,17 +27,20 @@ struct InternalNode {
 
 struct Cell {
   Key uint32
-  Value [296]byte
+  Value [230]byte
 }
 
 struct LeafNode {
   CommonHeader Header
   Header LeafNodeHeader
-  Cells  [13]Cell
+  Cells  [17]Cell
 }
 
 struct Row {
   Id uint32
+  Sex byte
+  Age uint8
   Username [32]byte
-  Email [256]byte
+  Email [128]byte
+  Phone [64]byte
 }

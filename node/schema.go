@@ -2,14 +2,37 @@ package node
 
 import (
 	"fmt"
+	"io"
+	"os"
+
+	"github.com/auxten/go-sqldb/utils"
 )
 
 var (
 	RowSize = (&Row{}).Size()
 )
 
-func printRow(row *Row) {
-	fmt.Printf("%d %s %s", row.Id, row.Username, row.Email)
+/*
+	Id       uint32
+	Sex      byte
+	Age      uint8
+	Username [32]byte
+	Email    [128]byte
+	Phone    [64]byte
+*/
+func PrintRow(row *Row) {
+	_, _ = WriteRow(os.Stdout, row)
+}
+
+func WriteRow(w io.Writer, row *Row) (int, error) {
+	return fmt.Fprintf(w, "%d\t%c\t%d\t%s\t%s\t%s\n",
+		row.Id,
+		row.Sex,
+		row.Age,
+		string(row.Username[:utils.Length(row.Username[:])]),
+		string(row.Email[:utils.Length(row.Email[:])]),
+		string(row.Phone[:utils.Length(row.Phone[:])]),
+	)
 }
 
 func dumpConst() {

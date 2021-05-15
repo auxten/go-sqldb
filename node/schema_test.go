@@ -20,18 +20,18 @@ type node struct {
 
 type cell struct {
 	Key   uint32
-	Value [296]byte
+	Value [230]byte
 }
 
 func TestStructAssignment(t *testing.T) {
 	Convey("cell assign", t, func() {
 		c1 := Cell{
 			Key:   1,
-			Value: [296]byte{'1', '1'},
+			Value: [230]byte{'1', '1'},
 		}
 		c2 := Cell{
 			Key:   2,
-			Value: [296]byte{'2', '2'},
+			Value: [230]byte{'2', '2'},
 		}
 		So(c2.Key, ShouldEqual, 2)
 		So(c2.Value[0], ShouldEqual, '2')
@@ -50,11 +50,11 @@ func TestStructAssignment(t *testing.T) {
 			cells: [2]cell{
 				{
 					Key:   1,
-					Value: [296]byte{'1', '1'},
+					Value: [230]byte{'1', '1'},
 				},
 				{
 					Key:   2,
-					Value: [296]byte{'2', '2'},
+					Value: [230]byte{'2', '2'},
 				},
 			},
 		}
@@ -64,11 +64,11 @@ func TestStructAssignment(t *testing.T) {
 			cells: [2]cell{
 				{
 					Key:   3,
-					Value: [296]byte{'3', '3'},
+					Value: [230]byte{'3', '3'},
 				},
 				{
 					Key:   4,
-					Value: [296]byte{'4', '4'},
+					Value: [230]byte{'4', '4'},
 				},
 			},
 		}

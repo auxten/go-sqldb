@@ -367,13 +367,13 @@ func (d *InternalNode) Unmarshal(buf []byte) (uint64, error) {
 
 type Cell struct {
 	Key   uint32
-	Value [296]byte
+	Value [230]byte
 }
 
 func (d *Cell) Size() (s uint64) {
 
 	{
-		s += 296
+		s += 230
 	}
 	s += 4
 	return
@@ -402,7 +402,7 @@ func (d *Cell) Marshal(buf []byte) ([]byte, error) {
 	}
 	{
 		copy(buf[i+4:], d.Value[:])
-		i += 296
+		i += 230
 	}
 	return buf[:i+4], nil
 }
@@ -417,7 +417,7 @@ func (d *Cell) Unmarshal(buf []byte) (uint64, error) {
 	}
 	{
 		copy(d.Value[:], buf[i+4:])
-		i += 296
+		i += 230
 	}
 	return i + 4, nil
 }
@@ -425,7 +425,7 @@ func (d *Cell) Unmarshal(buf []byte) (uint64, error) {
 type LeafNode struct {
 	CommonHeader Header
 	Header       LeafNodeHeader
-	Cells        [13]Cell
+	Cells        [17]Cell
 }
 
 func (d *LeafNode) Size() (s uint64) {
@@ -524,8 +524,11 @@ func (d *LeafNode) Unmarshal(buf []byte) (uint64, error) {
 
 type Row struct {
 	Id       uint32
+	Sex      byte
+	Age      uint8
 	Username [32]byte
-	Email    [256]byte
+	Email    [128]byte
+	Phone    [64]byte
 }
 
 func (d *Row) Size() (s uint64) {
@@ -534,9 +537,12 @@ func (d *Row) Size() (s uint64) {
 		s += 32
 	}
 	{
-		s += 256
+		s += 128
 	}
-	s += 4
+	{
+		s += 64
+	}
+	s += 6
 	return
 }
 func (d *Row) Marshal(buf []byte) ([]byte, error) {
@@ -562,14 +568,26 @@ func (d *Row) Marshal(buf []byte) ([]byte, error) {
 
 	}
 	{
-		copy(buf[i+4:], d.Username[:])
+		buf[4] = d.Sex
+	}
+	{
+
+		buf[0+5] = byte(d.Age >> 0)
+
+	}
+	{
+		copy(buf[i+6:], d.Username[:])
 		i += 32
 	}
 	{
-		copy(buf[i+4:], d.Email[:])
-		i += 256
+		copy(buf[i+6:], d.Email[:])
+		i += 128
 	}
-	return buf[:i+4], nil
+	{
+		copy(buf[i+6:], d.Phone[:])
+		i += 64
+	}
+	return buf[:i+6], nil
 }
 
 func (d *Row) Unmarshal(buf []byte) (uint64, error) {
@@ -581,12 +599,24 @@ func (d *Row) Unmarshal(buf []byte) (uint64, error) {
 
 	}
 	{
-		copy(d.Username[:], buf[i+4:])
+		d.Sex = buf[i+4]
+	}
+	{
+
+		d.Age = 0 | (uint8(buf[i+0+5]) << 0)
+
+	}
+	{
+		copy(d.Username[:], buf[i+6:])
 		i += 32
 	}
 	{
-		copy(d.Email[:], buf[i+4:])
-		i += 256
+		copy(d.Email[:], buf[i+6:])
+		i += 128
 	}
-	return i + 4, nil
+	{
+		copy(d.Phone[:], buf[i+6:])
+		i += 64
+	}
+	return i + 6, nil
 }

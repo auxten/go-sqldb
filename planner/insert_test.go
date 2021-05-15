@@ -1,7 +1,6 @@
 package planner
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -23,7 +22,7 @@ func TestPlan_Insert(t *testing.T) {
 
 		p := &parser.Parser{}
 		ast, err := p.ParseInsert("INSERT INTO table VALUES " +
-			"(10, auxten, \"auxtenwpc@gmail.com\")",
+			"(10, f, 28, auxten, \"auxtenwpc@gmail.com\", 13812341234)",
 		)
 		So(err, ShouldBeNil)
 
@@ -49,6 +48,7 @@ func TestPlan_Insert(t *testing.T) {
 		So(row.Id, ShouldEqual, 10)
 		So(string(row.Username[:]), ShouldStartWith, "auxten")
 		So(string(row.Email[:]), ShouldStartWith, "\"auxtenwpc@gmail.com\"")
+		So(string(row.Phone[:]), ShouldStartWith, "13812341234")
 	})
 }
 
@@ -83,7 +83,7 @@ func TestPlan_Insert_multiple(t *testing.T) {
 		resultPipe, err := plan2.SelectPrepare(ast2)
 		So(err, ShouldBeNil)
 		for row := range resultPipe {
-			fmt.Println(row.Id, string(row.Username[:]), string(row.Email[:]))
+			node.PrintRow(row)
 		}
 	})
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/auxten/go-sqldb/node"
 	"github.com/auxten/go-sqldb/page"
 	"github.com/auxten/go-sqldb/parser"
+	"github.com/auxten/go-sqldb/utils"
 )
 
 func (plan *Plan) SelectPrepare(ast *parser.SelectTree) (filteredPipe chan *node.Row, err error) {
@@ -124,10 +125,13 @@ func isRowFiltered(where []string, row *node.Row) (filtered bool, err error) {
 	)
 
 	/*
-		struct Row {
-		  Id uint32
-		  Username [32]byte
-		  Email [256]byte
+		type Row struct {
+			Id       uint32
+			Sex      byte
+			Age      uint8
+			Username [32]byte
+			Email    [128]byte
+			Phone    [64]byte
 		}
 	*/
 	for i, w := range where {
@@ -139,10 +143,16 @@ func isRowFiltered(where []string, row *node.Row) (filtered bool, err error) {
 			normalized[i] = "||"
 		case "ID":
 			normalized[i] = fmt.Sprintf("%d", row.Id)
+		case "SEX":
+			normalized[i] = fmt.Sprintf("%c", row.Sex)
+		case "AGE":
+			normalized[i] = fmt.Sprintf("%d", row.Age)
 		case "USERNAME":
-			normalized[i] = fmt.Sprintf("%s", string(row.Username[:]))
+			normalized[i] = fmt.Sprintf("%s", string(row.Username[:utils.Length(row.Username[:])]))
 		case "EMAIL":
-			normalized[i] = fmt.Sprintf("%s", string(row.Email[:]))
+			normalized[i] = fmt.Sprintf("%s", string(row.Email[:utils.Length(row.Email[:])]))
+		case "PHONE":
+			normalized[i] = fmt.Sprintf("%s", string(row.Phone[:utils.Length(row.Phone[:])]))
 		default:
 			normalized[i] = w
 		}

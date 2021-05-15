@@ -1,14 +1,12 @@
 package planner
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/auxten/go-sqldb/db"
 	"github.com/auxten/go-sqldb/node"
 	"github.com/auxten/go-sqldb/parser"
-	"github.com/auxten/go-sqldb/utils"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -27,9 +25,18 @@ func TestPlannerSelect(t *testing.T) {
 
 		for i := uint32(0); i < InsertCnt; i++ {
 			row := &node.Row{
-				Id:       i,
+				Id: i,
+				Sex: func(i int) byte {
+					if uint8(i%2) == 1 {
+						return 'm'
+					} else {
+						return 'f'
+					}
+				}(int(i)),
+				Age:      uint8(i % 120),
 				Username: [32]byte{'a', 'u', 'x', 't', 'e', 'n', byte('a' + i)},
-				Email:    [256]byte{'a', 'u', 'x', 't', 'e', 'n', '@', byte('a' + i)},
+				Email:    [128]byte{'a', 'u', 'x', 't', 'e', 'n', '@', byte('a' + i)},
+				Phone:    [64]byte{'1', '2', '3', '4', '5', '6', '0' + uint8((i/100)%10), '0' + uint8((i/10)%10), '0' + uint8(i%10)},
 			}
 			err = table.Insert(row)
 			//fmt.Println(i, string(row.Username[:]), string(row.Email[:]))
@@ -46,9 +53,7 @@ func TestPlannerSelect(t *testing.T) {
 		var i int
 		for row := range resultPipe {
 			i++
-			fmt.Println(row.Id,
-				string(row.Username[:utils.Length(row.Username[:])]),
-				string(row.Email[:utils.Length(row.Email[:])]))
+			node.PrintRow(row)
 		}
 		So(i, ShouldEqual, 1)
 
@@ -62,9 +67,7 @@ func TestPlannerSelect(t *testing.T) {
 		i = 0
 		for row := range resultPipe {
 			i++
-			fmt.Println(row.Id,
-				string(row.Username[:utils.Length(row.Username[:])]),
-				string(row.Email[:utils.Length(row.Email[:])]))
+			node.PrintRow(row)
 		}
 		So(i, ShouldEqual, InsertCnt)
 	})

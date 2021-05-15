@@ -32,8 +32,11 @@
     ```go
     struct Row {
         Id uint32
+        Sex byte
+        Age uint8
         Username [32]byte
-        Email [256]byte
+        Email [128]byte
+        Phone [64]byte
     }
     ```
 2. For limited support for SQL syntax, see [Test Cases](parser/parser_test.go)
