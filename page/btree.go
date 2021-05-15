@@ -4,10 +4,6 @@ import (
 	"github.com/auxten/go-sqldb/node"
 )
 
-/*
-
- */
-
 func InitLeafNode(node *node.LeafNode) {
 	node.CommonHeader.IsInternal = false
 	node.CommonHeader.IsRoot = false

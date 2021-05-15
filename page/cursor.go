@@ -111,7 +111,7 @@ func (cursor *Cursor) LeafNodeSplitInsert(key uint32, row *node.Row) (err error)
 		// parent page is an internal node
 		oldChildIdx := parentPage.InternalNode.FindChildByKey(oldMaxKey)
 		if oldChildIdx >= node.InternalNodeMaxCells {
-			panic("InternalNodeMaxCells exceeds")
+			panic("InternalNodeMaxCells exceeds during leaf node splitting")
 		}
 		parentPage.InternalNode.ICells[oldChildIdx].Key = oldPage.GetMaxKey()
 		err = cursor.Table.InternalNodeInsert(parentPageIdx, newPageNum)
