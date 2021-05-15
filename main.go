@@ -13,6 +13,7 @@ import (
 	"github.com/auxten/go-sqldb/page"
 	"github.com/auxten/go-sqldb/parser"
 	"github.com/auxten/go-sqldb/planner"
+	"github.com/auxten/go-sqldb/utils"
 )
 
 func main() {
@@ -61,8 +62,8 @@ func main() {
 				if len(ast.Projects) == 1 && ast.Projects[0] == parser.ASTERISK {
 					_, _ = fmt.Fprintf(writer, "%d\t%s\t%s\n",
 						row.Id,
-						string(row.Username[:length(row.Username[:])]),
-						string(row.Email[:length(row.Email[:])]))
+						string(row.Username[:utils.Length(row.Username[:])]),
+						string(row.Email[:utils.Length(row.Email[:])]))
 					continue
 				}
 				var outRow = make([]string, 0, 3)
@@ -71,9 +72,9 @@ func main() {
 					case "ID":
 						outRow = append(outRow, fmt.Sprintf("%d", row.Id))
 					case "USERNAME":
-						outRow = append(outRow, string(row.Username[:length(row.Username[:])]))
+						outRow = append(outRow, string(row.Username[:utils.Length(row.Username[:])]))
 					case "EMAIL":
-						outRow = append(outRow, string(row.Email[:length(row.Email[:])]))
+						outRow = append(outRow, string(row.Email[:utils.Length(row.Email[:])]))
 					}
 				}
 				_, _ = fmt.Fprint(writer, strings.Join(outRow, "\t"), "\n")
@@ -116,14 +117,4 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
-}
-
-func length(s []byte) (i int) {
-	var c byte
-	for i, c = range s {
-		if c == 0 {
-			break
-		}
-	}
-	return i
 }
