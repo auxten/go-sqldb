@@ -268,7 +268,7 @@ func (d *ICell) Unmarshal(buf []byte) (uint64, error) {
 type InternalNode struct {
 	CommonHeader Header
 	Header       InternalNodeHeader
-	ICells       [3]ICell
+	ICells       [510]ICell
 }
 
 func (d *InternalNode) Size() (s uint64) {

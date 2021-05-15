@@ -22,7 +22,7 @@ struct ICell {
 struct InternalNode {
   CommonHeader Header
   Header InternalNodeHeader
-  ICells [3]ICell
+  ICells [510]ICell
 }
 
 struct Cell {
