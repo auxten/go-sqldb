@@ -19,7 +19,7 @@
 1. 支持简单的 SELECT、INSERT 语法
    1. SELECT 支持数值类型的 WHERE
    1. 支持 LIMIT，但暂不支持 ORDER BY
-1. 如果你想要了解可以生产可用的 SQL Parser 是如何实现的，请参考我从 CrockroachDB 剥离的 SQL-2011 标准支持的 [SQL Parser](https://github.com/auxten/postgresql-parser)
+1. 如果你想要了解可以生产可用的 SQL Parser 是如何实现的，请参考我从 CockroachDB 剥离的 SQL-2011 标准支持的 [SQL Parser](https://github.com/auxten/postgresql-parser)
 
 #### 执行计划 Planner
 1. 基于火山模型（Volcano Model）的 [Select 实现](planner/select.go)
@@ -61,5 +61,5 @@
 1. [SQL-2011 SQL Parser](https://github.com/auxten/postgresql-parser)
 1. [Marshal/Unmarshal Code generation](https://github.com/andyleap/gencode/)
 1. [Document-oriented, embedded SQL database: genji](https://github.com/genjidb/genji)
-1. [CrockroachDB](https://github.com/cockroachdb/cockroach)
+1. [CockroachDB](https://github.com/cockroachdb/cockroach)
 1. [Let's Build a Simple Database](https://cstack.github.io/db_tutorial/)
