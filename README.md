@@ -20,7 +20,7 @@
 1. Support simple SELECT, INSERT syntax
    1. SELECT supports WHERE of numeric type
    1. Support LIMIT, but not support ORDER BY temporarily
-1. If you want to know how the SQL Parser that can be used in the production environment is implemented, please refer to the [SQL Parser](https://github.com/auxten/postgresql-parser) that I stripped from CrockroachDB and supports the SQL-2011 standard
+1. If you want to know how the SQL Parser that can be used in the production environment is implemented, please refer to the [SQL Parser](https://github.com/auxten/postgresql-parser) that I stripped from CockroachDB and supports the SQL-2011 standard
 
 #### Execution Planner
 1. [Select Implementation](planner/select.go) based on Volcano Model
@@ -64,6 +64,6 @@
 1. [SQL-2011 SQL Parser](https://github.com/auxten/postgresql-parser)
 1. [Marshal/Unmarshal Code generation](https://github.com/andyleap/gencode/)
 1. [Document-oriented, embedded SQL database: genji](https://github.com/genjidb/genji)
-1. [CrockRoachDB](https://github.com/cockroachdb/cockroach)
+1. [CockroachDB](https://github.com/cockroachdb/cockroach)
 1. [Let's Build a Simple Database](https://cstack.github.io/db_tutorial/)
 
