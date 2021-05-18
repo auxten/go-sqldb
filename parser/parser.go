@@ -7,8 +7,6 @@ import (
 	"text/scanner"
 )
 
-type Token int
-
 type StatementType string
 
 // SQL type tokens
