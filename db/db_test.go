@@ -18,7 +18,6 @@ func TestDB(t *testing.T) {
 		table, err := Open(testFile)
 		So(err, ShouldBeNil)
 		So(table.Pager.Pages[0].LeafNode.CommonHeader.IsInternal, ShouldBeFalse)
-		So(err, ShouldBeNil)
 		So(table, ShouldNotBeNil)
 
 		err = table.Insert(&node.Row{
@@ -44,9 +43,6 @@ func TestDB(t *testing.T) {
 			So(err, ShouldBeNil)
 		}
 		err = Close(table)
-		So(err, ShouldBeNil)
-
-		table, err = Open(testFile)
 		So(err, ShouldBeNil)
 	})
 }
