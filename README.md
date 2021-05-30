@@ -2,7 +2,7 @@
 
 [中文](README-zh.md)
 
-"Go SQL DB" is a relational database that supports SQL queries for research purposes. The main goal is to show the basic principles and key design of a relational database to database enthusiasts. Therefore, to easily understand, a lot of tricks but not very rigorous design was adopted, and the amount of code was controlled at about 2000 lines.
+"Go SQL DB" is a relational database that supports SQL queries for research purposes. The main goal is to show the basic principles and key design of a relational database to database enthusiasts. Therefore, to easily understand, a lot of tricks but not very rigorous design was adopted, and the amount of code was controlled at about 2000 lines (including 400 lines of unit tests).
 
 ## Features
 
