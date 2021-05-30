@@ -11,7 +11,7 @@
 
 #### Storage Engine
 1. Special Thanks to [Let's Build a Simple Database](https://cstack.github.io/db_tutorial/)
-1. Data retrieval structure based on B-Tree
+1. Data retrieval structure based on B+Tree
 1. Disk persistence engine based on 4KB paging
 1. Close to POD (Plain Old Data) speed serialization & deserialization
 
